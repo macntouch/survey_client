@@ -71,6 +71,11 @@ class Stats implements ICategory {
 			'num_storages_local' => $this->countStorages('local'),
 			'num_storages_home' => $this->countStorages('home'),
 			'num_storages_other' => $this->countStorages('other'),
+
+			'num_comments' => $this->countEntries('comments'),
+			'num_comment_markers' => $this->countEntries('comments_read_markers', 'user_id'),
+			'num_systemtags' => $this->countEntries('systemtag'),
+			'num_systemtags_mappings' => $this->countEntries('systemtag_object_mapping'),
 		];
 	}
 
@@ -116,11 +121,16 @@ class Stats implements ICategory {
 
 	/**
 	 * @param string $tableName
+	 * @param string $column
 	 * @return int
 	 */
-	protected function countEntries($tableName) {
+	protected function countEntries($tableName, $column = '*') {
+		if ($column !== '*') {
+			$column = 'DISTINCT(' . $column . ')';
+		}
+
 		$query = $this->connection->getQueryBuilder();
-		$query->selectAlias($query->createFunction('COUNT(*)'), 'num_entries')
+		$query->selectAlias($query->createFunction('COUNT(' . $column . ')'), 'num_entries')
 			->from($tableName);
 		$result = $query->execute();
 		$row = $result->fetch();
